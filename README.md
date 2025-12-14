@@ -1,1 +1,10 @@
-# Credit-Risk-Probability-Modeling
+# Credit-Risk-Probability-Modeling## Credit Scoring Business Understanding
+
+### Basel II and Model Interpretability
+The Basel II Accord places strong emphasis on **accurate risk measurement, transparency, and regulatory accountability**. Financial institutions must be able to **explain how credit risk is measured, how variables influence decisions, and how models are validated and monitored**. This makes an **interpretable and well-documented model essential**, as regulators require clear justification of credit decisions, traceability of inputs to outputs, and evidence that the model aligns with prudent risk management practices. Black-box models without explainability increase regulatory and operational risk.
+
+### Use of a Proxy Default Variable
+In the absence of a direct and reliable “default” label, it is necessary to create a **proxy variable** (e.g., severe delinquency, charge-off indicators, or prolonged non-payment) to approximate default behavior. This enables model training and risk estimation when ground truth is unavailable. However, predictions based on a proxy introduce **business risk**, including label noise, misclassification of customers, and potential bias. If the proxy does not accurately reflect true default behavior, the model may **overestimate or underestimate credit risk**, leading to higher losses, unfair credit denial, or regulatory concerns.
+
+### Model Complexity vs. Interpretability Trade-offs
+A **simple, interpretable model** such as Logistic Regression with Weight of Evidence (WoE) offers clear advantages in regulated financial environments: transparency, ease of validation, stability over time, and straightforward regulatory approval. However, it may sacrifice some predictive power. In contrast, **complex models** like Gradient Boosting often deliver higher accuracy and better capture non-linear relationships but suffer from limited interpretability, higher governance costs, and increased model risk. In practice, institutions must balance **predictive performance against explainability, regulatory compliance, and long-term maintainability**, often favoring simpler models for production use while leveraging complex models for benchmarking or feature discovery.
