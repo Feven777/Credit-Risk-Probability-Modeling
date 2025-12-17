@@ -184,6 +184,13 @@ def scale_rfm(rfm_df: pd.DataFrame):
     rfm_scaled = scaler.fit_transform(rfm_df[["Recency", "Frequency", "Monetary"]])
     return rfm_scaled, scaler
 
+def cluster_customers(rfm_scaled, n_clusters=3, random_state=42):
+    """
+    Cluster customers using KMeans.
+    """
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
+    cluster_labels = kmeans.fit_predict(rfm_scaled)
+    return cluster_labels, kmeans
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
     """
     Full data processing pipeline:
