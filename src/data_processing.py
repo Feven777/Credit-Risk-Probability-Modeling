@@ -5,8 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
-
-from xverse.transformer import WOE
+from sklearn.cluster import KMeans
 
 
 
@@ -156,7 +155,70 @@ def drop_low_iv_features(X: pd.DataFrame, iv_df: pd.DataFrame, threshold: float 
     
     return X_selected
 
+def calculate_rfm(df: pd.DataFrame, snapshot_date: str = None) -> pd.DataFrame:
+    """
+    Calculate Recency, Frequency, Monetary (RFM) features per customer.
+    """
+    df = df.copy()
+    df["TransactionStartTime"] = pd.to_datetime(df["TransactionStartTime"])
 
+    # Use max transaction date +1 if snapshot_date not provided
+    if snapshot_date is None:
+        snapshot_date = df["TransactionStartTime"].max() + pd.Timedelta(days=1)
+    else:
+        snapshot_date = pd.to_datetime(snapshot_date)
+
+    rfm = df.groupby("CustomerId").agg(
+        Recency=("TransactionStartTime", lambda x: (snapshot_date - x.max()).days),
+        Frequency=("TransactionId", "count"),
+        Monetary=("Amount", "sum")
+    ).reset_index()
+
+    return rfm
+
+def scale_rfm(rfm_df: pd.DataFrame):
+    """
+    Standardize RFM features for clustering.
+    """
+    scaler = StandardScaler()
+    rfm_scaled = scaler.fit_transform(rfm_df[["Recency", "Frequency", "Monetary"]])
+    return rfm_scaled, scaler
+
+def cluster_customers(rfm_scaled, n_clusters=3, random_state=42):
+    """
+    Cluster customers using KMeans.
+    """
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
+    cluster_labels = kmeans.fit_predict(rfm_scaled)
+    return cluster_labels, kmeans
+
+def assign_high_risk_label(rfm_df: pd.DataFrame, cluster_labels):
+    """
+    Identify high-risk customers (least engaged cluster).
+    """
+    rfm_df = rfm_df.copy()
+    rfm_df["Cluster"] = cluster_labels
+
+    # Compute average RFM per cluster
+    cluster_summary = rfm_df.groupby("Cluster")[["Recency", "Frequency", "Monetary"]].mean()
+
+    # High-risk cluster: low Frequency & low Monetary
+    high_risk_cluster = cluster_summary.sort_values(
+        by=["Frequency", "Monetary"], ascending=[True, True]
+    ).index[0]
+
+    # Create binary target
+    rfm_df["is_high_risk"] = (rfm_df["Cluster"] == high_risk_cluster).astype(int)
+
+    return rfm_df[["CustomerId", "is_high_risk"]]
+
+def integrate_high_risk_target(df: pd.DataFrame, high_risk_df: pd.DataFrame):
+    """
+    Merge 'is_high_risk' column back into main dataset.
+    """
+    df = df.merge(high_risk_df, on="CustomerId", how="left")
+    df["is_high_risk"].fillna(0)  # for customers missing from RFM
+    return df
 
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
     """
