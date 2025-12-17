@@ -191,6 +191,27 @@ def cluster_customers(rfm_scaled, n_clusters=3, random_state=42):
     kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
     cluster_labels = kmeans.fit_predict(rfm_scaled)
     return cluster_labels, kmeans
+
+def assign_high_risk_label(rfm_df: pd.DataFrame, cluster_labels):
+    """
+    Identify high-risk customers (least engaged cluster).
+    """
+    rfm_df = rfm_df.copy()
+    rfm_df["Cluster"] = cluster_labels
+
+    # Compute average RFM per cluster
+    cluster_summary = rfm_df.groupby("Cluster")[["Recency", "Frequency", "Monetary"]].mean()
+
+    # High-risk cluster: low Frequency & low Monetary
+    high_risk_cluster = cluster_summary.sort_values(
+        by=["Frequency", "Monetary"], ascending=[True, True]
+    ).index[0]
+
+    # Create binary target
+    rfm_df["is_high_risk"] = (rfm_df["Cluster"] == high_risk_cluster).astype(int)
+
+    return rfm_df[["CustomerId", "is_high_risk"]]
+
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
     """
     Full data processing pipeline:
