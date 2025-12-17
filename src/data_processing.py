@@ -212,6 +212,14 @@ def assign_high_risk_label(rfm_df: pd.DataFrame, cluster_labels):
 
     return rfm_df[["CustomerId", "is_high_risk"]]
 
+def integrate_high_risk_target(df: pd.DataFrame, high_risk_df: pd.DataFrame):
+    """
+    Merge 'is_high_risk' column back into main dataset.
+    """
+    df = df.merge(high_risk_df, on="CustomerId", how="left")
+    df["is_high_risk"].fillna(0)  # for customers missing from RFM
+    return df
+
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
     """
     Full data processing pipeline:
