@@ -5,8 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
-
-from xverse.transformer import WOE
+from sklearn.cluster import KMeans
 
 
 
@@ -156,6 +155,24 @@ def drop_low_iv_features(X: pd.DataFrame, iv_df: pd.DataFrame, threshold: float 
     
     return X_selected
 
+def calculate_rfm(df: pd.DataFrame, snapshot_date: str = None) -> pd.DataFrame:
+    """
+    Calculate Recency, Frequency, Monetary (RFM) features per customer.
+    """
+    df = df.copy()
+    df["TransactionStartTime"] = pd.to_datetime(df["TransactionStartTime"])
+
+    # Use max transaction date +1 if snapshot_date not provided
+    if snapshot_date is None:
+        snapshot_date = df["TransactionStartTime"].max() + pd.Timedelta(days=1)
+    else:
+        snapshot_date = pd.to_datetime(snapshot_date)
+
+    rfm = df.groupby("CustomerId").agg(
+        Recency=("TransactionStartTime", lambda x: (snapshot_date - x.max()).days),
+        Frequency=("TransactionId", "count"),
+        Monetary=("Amount", "sum")
+    ).reset_index()
 
 
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
