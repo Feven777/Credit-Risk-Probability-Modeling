@@ -174,6 +174,15 @@ def calculate_rfm(df: pd.DataFrame, snapshot_date: str = None) -> pd.DataFrame:
         Monetary=("Amount", "sum")
     ).reset_index()
 
+    return rfm
+
+def scale_rfm(rfm_df: pd.DataFrame):
+    """
+    Standardize RFM features for clustering.
+    """
+    scaler = StandardScaler()
+    rfm_scaled = scaler.fit_transform(rfm_df[["Recency", "Frequency", "Monetary"]])
+    return rfm_scaled, scaler
 
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
     """
