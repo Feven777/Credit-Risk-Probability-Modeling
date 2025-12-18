@@ -13,3 +13,6 @@ vaderSentiment
 textblob          
 statsmodels
 seaborn
+lightgbm
+mlflow
+pytest

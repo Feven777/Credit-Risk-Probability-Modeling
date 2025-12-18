@@ -1,3 +1,9 @@
 .venv
 data
 __pycache__/
+mlruns/
+mlflow.db
+.pytest_cache/
+*.pyc
+iv_values.csv
+

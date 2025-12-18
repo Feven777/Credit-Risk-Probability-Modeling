@@ -1,7 +1,7 @@
 import pandas as pd
 from src.data_processing import (
     process_data,
-    calculate_rfm, scale_rfm, cluster_customers, assign_high_risk_label, integrate_high_risk_target  # Task 4
+    calculate_rfm, scale_rfm, cluster_customers, assign_high_risk_label, integrate_high_risk_target  
 )
 
 # Load data
