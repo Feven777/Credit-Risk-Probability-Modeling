@@ -217,7 +217,8 @@ def integrate_high_risk_target(df: pd.DataFrame, high_risk_df: pd.DataFrame):
     Merge 'is_high_risk' column back into main dataset.
     """
     df = df.merge(high_risk_df, on="CustomerId", how="left")
-    df["is_high_risk"].fillna(0)  # for customers missing from RFM
+    df["is_high_risk"] = df["is_high_risk"].fillna(0)
+
     return df
 
 def process_data(df: pd.DataFrame, iv_threshold: float = 0.02):
